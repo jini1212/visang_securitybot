@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { question } = req.body;
+  const { question, context } = req.body;
 
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
@@ -20,14 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
         {
           role: 'user',
-          content: question,
+          content: `질문: ${question}\n\n[문서 내용]\n${context}`,
         },
       ],
     }),
   });
 
   const data = await response.json();
-  const answer = data.choices?.[0]?.message?.content || '죄송해요, 답변을 가져오지 못했어요.';
+  const answer = data.choices?.[0]?.message?.content || '답변을 생성하지 못했어요.';
 
   res.status(200).json({ answer });
 }
